@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
 import { Send } from "@material-ui/icons";
 import Drawer from "@material-ui/core/Drawer";
@@ -34,6 +34,7 @@ export interface IRoomOverview {
 	roomName: string;
 	lastMessageAuthorName?: string;
 	lastMessageContent?: string;
+	lastMessageTimestamp: string;
 }
 
 export interface IChatMessage {
@@ -87,27 +88,28 @@ function App() {
 		if (token) {
 			authToken = token;
 			setLoggedIn(true);
-			fetchAllRooms(token);
+			fetchAllRooms();
 			//Get info about the user
 			getUserInfo(authToken).then((data) => setCurrentUserInfo(data));
 		}
 	}
 
-	function fetchAllRooms(authToken: string) {
+	function fetchAllRooms() {
 		getAllRooms(authToken).then((data) => setRoomOverviewlist(data));
 	}
 
 	function handleCreateNewRoom(roomname: string) {
 		createRoom(authToken, roomname).then((isOk) => {
 			if (isOk) {
-				fetchAllRooms(authToken);
+				fetchAllRooms();
 				setNewRoomModalOpen(false);
 			}
 		});
 	}
 
 	function fetchChatMessages(roomId: number) {
-		getAllChatMessages(authToken, roomId).then((data) => setChatMessages(data));
+		console.log("Fetching messages...", roomId);
+		if (roomId > 0) getAllChatMessages(authToken, roomId).then((data) => setChatMessages(data));
 	}
 
 	function handleSendMessage(message: string) {
@@ -130,6 +132,14 @@ function App() {
 	function handleAddUserToRoom(roomId: number, username: string) {
 		addUserToRoom(authToken, username, roomId);
 	}
+
+	useEffect(() => {
+		const timer = setInterval(() => {
+			fetchChatMessages(activeRoomId);
+			fetchAllRooms();
+		}, 2000);
+		return () => clearInterval(timer);
+	});
 
 	return isLoggedIn ? (
 		<div className={classes.root}>

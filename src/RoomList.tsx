@@ -33,42 +33,48 @@ const RoomList = (props: any) => {
 
 	return (
 		<List>
-			{props["roomOverviewList"].map((room: IRoomOverview) => (
-				<>
-					<ListItem
-						alignItems="flex-start"
-						button
-						selected={props["activeRoomId"] == room.roomId}
-						onClick={() => props["setActiveRoomId"](room.roomId)}
-						onContextMenu={(evt) => {
-							evt.preventDefault();
-							props["setActiveRoomId"](room.roomId);
-							props["onRightClick"](room.roomId);
-						}}
-					>
-						<ListItemAvatar>
-							<Avatar>{room.roomName[0].toUpperCase()}</Avatar>
-						</ListItemAvatar>
-						<ListItemText
-							primary={room.roomName}
-							secondary={
-								<>
-									<Typography
-										component="span"
-										variant="body2"
-										className={classes.inline}
-										color="textPrimary"
-									>
-										{room.lastMessageAuthorName || ""}
-									</Typography>
-									{" — " + room.lastMessageContent || ""}
-								</>
-							}
-						/>
-					</ListItem>
-					<Divider />
-				</>
-			))}
+			{props["roomOverviewList"]
+				.sort(
+					(room1: IRoomOverview, room2: IRoomOverview) =>
+						Date.parse(room2.lastMessageTimestamp.slice(0, -5)) -
+						Date.parse(room1.lastMessageTimestamp.slice(0, -5))
+				)
+				.map((room: IRoomOverview) => (
+					<>
+						<ListItem
+							alignItems="flex-start"
+							button
+							selected={props["activeRoomId"] == room.roomId}
+							onClick={() => props["setActiveRoomId"](room.roomId)}
+							onContextMenu={(evt) => {
+								evt.preventDefault();
+								props["setActiveRoomId"](room.roomId);
+								props["onRightClick"](room.roomId);
+							}}
+						>
+							<ListItemAvatar>
+								<Avatar>{room.roomName[0].toUpperCase()}</Avatar>
+							</ListItemAvatar>
+							<ListItemText
+								primary={room.roomName}
+								secondary={
+									<>
+										<Typography
+											component="span"
+											variant="body2"
+											className={classes.inline}
+											color="textPrimary"
+										>
+											{room.lastMessageAuthorName || ""}
+										</Typography>
+										{" — " + room.lastMessageContent || ""}
+									</>
+								}
+							/>
+						</ListItem>
+						<Divider />
+					</>
+				))}
 			<ListItem
 				button
 				className={classes.addButton}
