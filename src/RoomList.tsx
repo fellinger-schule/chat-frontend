@@ -40,6 +40,11 @@ const RoomList = (props: any) => {
 						button
 						selected={props["activeRoomId"] == room.roomId}
 						onClick={() => props["setActiveRoomId"](room.roomId)}
+						onContextMenu={(evt) => {
+							evt.preventDefault();
+							props["setActiveRoomId"](room.roomId);
+							props["onRightClick"](room.roomId);
+						}}
 					>
 						<ListItemAvatar>
 							<Avatar>{room.roomName[0].toUpperCase()}</Avatar>

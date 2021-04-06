@@ -77,3 +77,14 @@ export async function getUserInfo(auth: string) {
 	}).then((resp) => resp.json());
 	return response;
 }
+
+export async function addUserToRoom(auth: string, username: string, roomId: number) {
+	//"addUser/{username}/toRoom/{roomId}")
+	const response = await fetch(`${API_URL}/room/addUser/${username}/toRoom/${roomId}`, {
+		headers: {
+			"Content-Type": "application/json",
+			Authorization: `Bearer ${auth}`,
+		},
+	}).then((resp) => resp.ok);
+	return response;
+}

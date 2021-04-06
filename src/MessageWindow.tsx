@@ -55,13 +55,13 @@ const MessageWindow = (props: any) => {
 				<Box
 					display="flex"
 					justifyContent={
-						props["currentUserInfo"].id === message.authorId ? "flex-start" : "flex-end"
+						props["currentUserInfo"].id !== message.authorId ? "flex-start" : "flex-end"
 					}
 					m={1}
 					p={1}
 				>
 					<ListItem alignItems="flex-start" className={classes.messageList}>
-						{props["currentUserInfo"].id === message.authorId ? (
+						{props["currentUserInfo"].id !== message.authorId ? (
 							<>
 								<ListItemAvatar>
 									<Avatar>{message.authorName[0] || ""}</Avatar>

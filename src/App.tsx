@@ -12,13 +12,21 @@ import TextField from "@material-ui/core/TextField";
 import RoomList from "./RoomList";
 import LoginPage from "./LoginPage";
 import MessageWindow from "./MessageWindow";
-import { createRoom, getAllChatMessages, getAllRooms, sendMessage, getUserInfo } from "./Api";
+import {
+	createRoom,
+	getAllChatMessages,
+	getAllRooms,
+	sendMessage,
+	getUserInfo,
+	addUserToRoom,
+} from "./Api";
 import "./App.css";
 
 import { Button } from "@material-ui/core";
 
 var authToken: string;
 var newRoomName: string;
+var newUsernameToBeAddedToRoom: string;
 const drawerWidth = 300;
 
 export interface IRoomOverview {
@@ -70,6 +78,7 @@ function App() {
 	const [isLoggedIn, setLoggedIn] = useState(false);
 	const [currentUserInfo, setCurrentUserInfo] = useState({} as IUserInfo);
 	const [isNewRoomModalOpen, setNewRoomModalOpen] = useState(false);
+	const [isAddUserToGroupModalOpen, setAddUserToGroupModalOpen] = useState(false);
 	const [roomOverviewList, setRoomOverviewlist] = useState([] as IRoomOverview[]);
 	const [activeRoomId, setActiveRoomId] = useState(-1);
 	const [chatMessages, setChatMessages] = useState([] as IChatMessage[]);
@@ -114,6 +123,14 @@ function App() {
 		fetchChatMessages(roomId);
 	}
 
+	function handleRoomContextMenuOpen(roomId: number) {
+		setAddUserToGroupModalOpen(true);
+	}
+
+	function handleAddUserToRoom(roomId: number, username: string) {
+		addUserToRoom(authToken, username, roomId);
+	}
+
 	return isLoggedIn ? (
 		<div className={classes.root}>
 			<CssBaseline />
@@ -131,6 +148,7 @@ function App() {
 					setActiveRoomId={handleCurrentRoomId}
 					activeRoomId={activeRoomId}
 					sendMessage={handleSendMessage}
+					onRightClick={handleRoomContextMenuOpen}
 				/>
 			</Drawer>
 			<main className={classes.content}>
@@ -145,28 +163,68 @@ function App() {
 				)}
 			</main>
 			<Dialog open={isNewRoomModalOpen} aria-labelledby="form-dialog-title">
-				<DialogTitle id="form-dialog-title">Create new Room</DialogTitle>
-				<DialogContent>
-					<DialogContentText>
-						To continue, please enter what your room should be named like
-					</DialogContentText>
-					<TextField
-						autoFocus
-						margin="dense"
-						id="name"
-						label="Room name"
-						fullWidth
-						onChange={(evt) => (newRoomName = evt.target.value)}
-					/>
-				</DialogContent>
-				<DialogActions>
-					<Button onClick={() => setNewRoomModalOpen(false)} color="primary">
-						Cancel
-					</Button>
-					<Button onClick={() => handleCreateNewRoom(newRoomName)} color="primary">
-						Accept
-					</Button>
-				</DialogActions>
+				<form
+					onSubmit={(evt) => {
+						evt.preventDefault();
+						handleCreateNewRoom(newRoomName);
+						setAddUserToGroupModalOpen(false);
+					}}
+				>
+					<DialogTitle id="form-dialog-title">Create new Room</DialogTitle>
+					<DialogContent>
+						<DialogContentText>
+							To continue, please enter what your room should be named like
+						</DialogContentText>
+						<TextField
+							autoFocus
+							margin="dense"
+							id="name"
+							label="Room name"
+							fullWidth
+							onChange={(evt) => (newRoomName = evt.target.value)}
+						/>
+					</DialogContent>
+					<DialogActions>
+						<Button onClick={() => setNewRoomModalOpen(false)} color="primary">
+							Cancel
+						</Button>
+						<Button type="submit" color="primary">
+							Accept
+						</Button>
+					</DialogActions>
+				</form>
+			</Dialog>
+			<Dialog open={isAddUserToGroupModalOpen} aria-labelledby="form-dialog-title">
+				<form
+					onSubmit={(evt) => {
+						evt.preventDefault();
+						handleAddUserToRoom(activeRoomId, newUsernameToBeAddedToRoom);
+						setAddUserToGroupModalOpen(false);
+					}}
+				>
+					<DialogTitle id="form-dialog-title">Add user to room</DialogTitle>
+					<DialogContent>
+						<DialogContentText>
+							To continue, please enter the username of the new group member
+						</DialogContentText>
+						<TextField
+							autoFocus
+							margin="dense"
+							id="name"
+							label="Username"
+							fullWidth
+							onChange={(evt) => (newUsernameToBeAddedToRoom = evt.target.value)}
+						/>
+					</DialogContent>
+					<DialogActions>
+						<Button onClick={() => setAddUserToGroupModalOpen(false)} color="primary">
+							Cancel
+						</Button>
+						<Button color="primary" type="submit">
+							Accept
+						</Button>
+					</DialogActions>
+				</form>
 			</Dialog>
 		</div>
 	) : (
