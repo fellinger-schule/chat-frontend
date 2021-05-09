@@ -34,14 +34,13 @@ const RoomList = (props: any) => {
 	return (
 		<List>
 			{props["roomOverviewList"]
-				.sort(
-					(room1: IRoomOverview, room2: IRoomOverview) =>
-						Date.parse(room2.lastMessageTimestamp.slice(0, -5)) -
-						Date.parse(room1.lastMessageTimestamp.slice(0, -5))
+				.sort((room1: IRoomOverview, room2: IRoomOverview) =>
+					room1.roomName.localeCompare(room2.roomName)
 				)
 				.map((room: IRoomOverview) => (
 					<>
 						<ListItem
+							key={room.roomId}
 							alignItems="flex-start"
 							button
 							selected={props["activeRoomId"] == room.roomId}
@@ -76,6 +75,7 @@ const RoomList = (props: any) => {
 					</>
 				))}
 			<ListItem
+				key={"newRoomButton"}
 				button
 				className={classes.addButton}
 				onClick={() => props["setNewRoomModalOpen"](true)}

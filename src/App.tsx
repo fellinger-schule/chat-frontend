@@ -74,7 +74,11 @@ const useStyles = makeStyles((theme: Theme) =>
 	})
 );
 
+var roomId2 = -1;
+var userinfo: IUserInfo;
+
 function App() {
+	var ws;
 	const classes = useStyles();
 	const [isLoggedIn, setLoggedIn] = useState(false);
 	const [currentUserInfo, setCurrentUserInfo] = useState({} as IUserInfo);
@@ -84,13 +88,38 @@ function App() {
 	const [activeRoomId, setActiveRoomId] = useState(-1);
 	const [chatMessages, setChatMessages] = useState([] as IChatMessage[]);
 
+	function onwsmessage(event: any) {
+		try {
+			let data = JSON.parse(event.data);
+			console.log(data, activeRoomId);
+			if (data.type == "roomChanged" && data.roomId == roomId2) {
+				console.log("Websocket evt received and updated room");
+				fetchAllRooms();
+				fetchChatMessages(roomId2);
+			} else if (data.type == "roomAssociationChanged") {
+				fetchAllRooms();
+			}
+		} catch {}
+	}
+
+	function onwsclose(event: any) {
+		console.log("Websocket closed");
+	}
+
 	function setToken(token: string) {
 		if (token) {
 			authToken = token;
 			setLoggedIn(true);
 			fetchAllRooms();
 			//Get info about the user
-			getUserInfo(authToken).then((data) => setCurrentUserInfo(data));
+			getUserInfo(authToken).then((data) => {
+				setCurrentUserInfo(data);
+			});
+
+			ws = new WebSocket("ws://localhost:8069/chat/" + Date.now().valueOf());
+			ws.addEventListener("message", onwsmessage);
+			ws.addEventListener("open", (event) => console.log("Websocket opened"));
+			ws.addEventListener("close", (event) => console.log("Websocket closed"));
 		}
 	}
 
@@ -121,6 +150,7 @@ function App() {
 	}
 
 	function handleCurrentRoomId(roomId: number) {
+		roomId2 = roomId;
 		setActiveRoomId(roomId);
 		fetchChatMessages(roomId);
 	}
@@ -132,14 +162,6 @@ function App() {
 	function handleAddUserToRoom(roomId: number, username: string) {
 		addUserToRoom(authToken, username, roomId);
 	}
-
-	useEffect(() => {
-		const timer = setInterval(() => {
-			fetchChatMessages(activeRoomId);
-			fetchAllRooms();
-		}, 2000);
-		return () => clearInterval(timer);
-	});
 
 	return isLoggedIn ? (
 		<div className={classes.root}>
